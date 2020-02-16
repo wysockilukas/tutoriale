@@ -1,0 +1,45 @@
+.features {
+    grid-column: center-start / center-end;
+
+     margin: 15rem 0;
+
+    // @supports(display: grid) {
+        display: grid;
+        //grid-template-columns: repeat(3, 1fr);
+         grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr)); //trik z auto fit rob automatycznu track zeby szysto pomiescic, kazda kol ma miec minum 25 rem
+         grid-gap: 6rem;
+        align-items: start; //zeby teks yl od gory
+    // }
+}
+
+
+ .feature {
+
+    //background: orangered;
+
+//     float: left;
+//     width: 33.3333%;
+//     margin-bottom: 6rem;
+
+//     @supports(display: grid) {
+//         width: auto;
+//         margin-bottom: 0;
+//     }
+
+    display: grid;
+    grid-template-columns: min-content 1fr;  //1 kolunna nie bedziemnijsza nic sziedzaca w niech ikona
+    grid-row-gap: 1.5rem;
+    grid-column-gap: 2.5rem;
+
+    &__icon {
+        fill: $color-primary;
+        width: 4.5rem;
+        height: 4.5rem;
+        grid-row: 1 / span 2;  //!!! uwaga nize moze byc 1/-1 bo to jest implicid grid
+        transform: translateY(-1rem);
+    }
+
+     &__text {
+         font-size: 1.7rem;
+    }
+}
