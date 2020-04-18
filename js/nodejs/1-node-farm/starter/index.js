@@ -8,19 +8,38 @@ const url = require('url');
 
 const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, 'utf-8')
 const dataObj = JSON.parse(data)
-let pageOveriew = fs.readFileSync(`${__dirname}/templates/template-overview.html`)
-let pageProduct = fs.readFileSync(`${__dirname}/templates/template-product.html`)
+const pageOveriew = fs.readFileSync(`${__dirname}/templates/template-overview.html`)
+const pageProduct = fs.readFileSync(`${__dirname}/templates/template-product.html`)
+const pageCard = fs.readFileSync(`${__dirname}/templates/template-card.html`)
 
-Object.keys(dataObj[0]).forEach( (param) => {
-    pageProduct = pageProduct.toString().replace(`{%${param}%}`, dataObj[1][param])
+const productHTML = [];
+const cardHTML = [];
+
+
+dataObj.forEach( (page) => {
+    let oneProductPage = pageProduct
+    let oneCardPage = pageCard
+    Object.keys(page).forEach( (param) => {
+        const find = `{%${param}%}`
+        oneProductPage = oneProductPage.toString().replace(  new RegExp(find,'g')   , page[param])
+        oneCardPage = oneCardPage.toString().replace(  new RegExp(find,'g')   , page[param])
+    })
+    productHTML.push(oneProductPage)
+    cardHTML.push(oneCardPage)
 })
+
+const find = '{%PRODUCT_CARD%}'
+const overwiewHTML = pageOveriew.toString().replace(  new RegExp(find,'g')   , cardHTML.join('<br />'))
+
+
 
 const server = http.createServer((req, res) => {
 
     const pathname = req.url;
 
     if (pathname === "/") {
-        res.end(pageProduct)
+        // res.end(productHTML[3])
+        res.end( overwiewHTML  )
 
     } else if (pathname === '/test') {
         const resJson = {
