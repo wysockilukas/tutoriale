@@ -2,45 +2,37 @@ const fs = require('fs')
 const http = require('http');
 const url = require('url');
 
+ const replaceTemplate =  require('./modules/replaceTemplate');
 
 
 
 
 const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, 'utf-8')
 const dataObj = JSON.parse(data)
-const pageOveriew = fs.readFileSync(`${__dirname}/templates/template-overview.html`)
-const pageProduct = fs.readFileSync(`${__dirname}/templates/template-product.html`)
-const pageCard = fs.readFileSync(`${__dirname}/templates/template-card.html`)
+const pageOveriew = fs.readFileSync(`${__dirname}/templates/template-overview.html`, 'utf-8')
+const pageProduct = fs.readFileSync(`${__dirname}/templates/template-product.html`, 'utf-8')
+const pageCard = fs.readFileSync(`${__dirname}/templates/template-card.html`, 'utf-8')
 
-const productHTML = [];
-const cardHTML = [];
+const productHTML = replaceTemplate(pageProduct, dataObj);
+const cardHTML =  replaceTemplate(pageCard, dataObj);
 
 
-dataObj.forEach( (page) => {
-    let oneProductPage = pageProduct
-    let oneCardPage = pageCard
-    Object.keys(page).forEach( (param) => {
-        const find = `{%${param}%}`
-        oneProductPage = oneProductPage.toString().replace(  new RegExp(find,'g')   , page[param])
-        oneCardPage = oneCardPage.toString().replace(  new RegExp(find,'g')   , page[param])
-    })
-    productHTML.push(oneProductPage)
-    cardHTML.push(oneCardPage)
-})
 
-const find = '{%PRODUCT_CARD%}'
-const overwiewHTML = pageOveriew.toString().replace(  new RegExp(find,'g')   , cardHTML.join('<br />'))
+const overwiewHTML = pageOveriew.replace( '{%PRODUCT_CARD%}'  , cardHTML.join('<br />'))
 
 
 
 const server = http.createServer((req, res) => {
+    
+    const {query, pathname} = url.parse(  req.url, true  )
 
-    const pathname = req.url;
-
-    if (pathname === "/") {
-        // res.end(productHTML[3])
+    if (pathname === "/" || pathname === "/overview") {
+        res.writeHead(200, {'Conten-type': 'text/html'})
         res.end( overwiewHTML  )
 
+    } else if (pathname === '/product') {
+        res.writeHead(200, {'Conten-type': 'text/html'})
+        res.end( productHTML[query.id]  )     
     } else if (pathname === '/test') {
         const resJson = {
             headers: {
