@@ -1,0 +1,11 @@
+{
+  "name": "2-how-node-work",
+  "version": "1.0.0",
+  "description": "symulacja event loop",
+  "main": "event-loop.js",
+  "scripts": {
+    "start": "set UV_THREADPOOL_SIZE=6 & node event-loop.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
