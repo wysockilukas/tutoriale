@@ -4,7 +4,7 @@
   "description": "symulacja event loop",
   "main": "event-loop.js",
   "scripts": {
-    "start": "set UV_THREADPOOL_SIZE=6 & node event-loop.js"
+    "start1": "set UV_THREADPOOL_SIZE=6 & node event-loop.js"
   },
   "author": "",
   "license": "ISC"
