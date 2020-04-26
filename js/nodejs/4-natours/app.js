@@ -1,4 +1,5 @@
 const express = require('express');
+
 const app = express();
 const morgan = require('morgan');
 
@@ -7,12 +8,16 @@ const userRouter = require('./routes/userRouts');
 
 // const bodyParser = require('body-parser');
 
-app.use(morgan('dev'));
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
 // express.json() to jakaś funkcja ktora jest middleware
 // bez tego nie widac req.body w poscie
 app.use(express.json());
 // app.use(bodyParser.json());
+
+app.use(express.static(`${__dirname}/public`));
 
 // Tworrzymy własne funkcje middlewae
 app.use((req, res, next) => {
@@ -27,7 +32,4 @@ app.use((req, res, next) => {
 app.use('/api/v1/tours', tourRouter); // to sie nazywa mouting router
 app.use('/api/v1/users', userRouter);
 
-const port = 3000;
-app.listen(port, () => {
-  console.log('Serwer pracuje na porcie ', port);
-});
+module.exports = app;
