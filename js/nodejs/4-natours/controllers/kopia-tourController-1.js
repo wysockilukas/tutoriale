@@ -1,5 +1,4 @@
 const Tour = require('../models/tourModel');
-const APIFeatures = require('../utils/apiFeatures');
 
 exports.middleWareAliasTopTours = (req, res, next) => {
   // const newReq = {
@@ -18,53 +17,48 @@ exports.middleWareAliasTopTours = (req, res, next) => {
 exports.getAllTours = async (req, res) => {
   try {
     // 1A) Budujemy zapytanie
-    // let queryObj = { ...req.query };
-    // const excludedFileds = ['page', 'sort', 'limit', 'fields'];
-    // excludedFileds.forEach((el) => delete queryObj[el]);
+    let queryObj = { ...req.query };
+    const excludedFileds = ['page', 'sort', 'limit', 'fields'];
+    excludedFileds.forEach((el) => delete queryObj[el]);
 
-    // // 1B) Zaawansowane filtrowanie
-    // const queryStr = JSON.stringify(queryObj).replace(/\b(gt|gte|lt|lte)\b/g, (match) => `$${match}`);
-    // queryObj = JSON.parse(queryStr);
-    // // console.log(req.query, queryObj);
+    // 1B) Zaawansowane filtrowanie
+    const queryStr = JSON.stringify(queryObj).replace(/\b(gt|gte|lt|lte)\b/g, (match) => `$${match}`);
+    queryObj = JSON.parse(queryStr);
+    // console.log(req.query, queryObj);
 
-    // let query = Tour.find(queryObj); //to zwraca query, ale jak jest z await to od razy wykonuje to zapytanie i wtedy nie mozna ztobic np sort lub limit
+    let query = Tour.find(queryObj); //to zwraca query, ale jak jest z await to od razy wykonuje to zapytanie i wtedy nie mozna ztobic np sort lub limit
 
     // 2 Sortowanie
-    // if (req.query.sort) {
-    //   query = query.sort(req.query.sort.split(',').join(' '));
-    // } else {
-    //   query = query.sort('-createdAt');
-    // }
+    if (req.query.sort) {
+      query = query.sort(req.query.sort.split(',').join(' '));
+    } else {
+      query = query.sort('-createdAt');
+    }
 
     // 3 Fields limit
-    // if (req.query.fields) {
-    //   query = query.select(req.query.fields.split(',').join(' '));
-    // } else {
-    //   query = query.select('-__v');
-    // }
+    if (req.query.fields) {
+      query = query.select(req.query.fields.split(',').join(' '));
+    } else {
+      query = query.select('-__v');
+    }
 
-    // // 4 Pagination
-    // const page = req.query.page * 1 || 1;
-    // const limit = req.query.limit * 1 || 100;
-    // const skip = (page - 1) * limit;
-    // query = query.skip(skip).limit(limit);
-
-    // // if (req.query.page) {
-    // //   const numTours = await Tour.countDocuments();
-    // //   if (skip >= numTours) throw new Error('Nie ma takiej strony'); // i kod przejdzie do cache error
-    // // }
+    // 4 Pagination
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page - 1) * limit;
+    query = query.skip(skip).limit(limit);
 
     // if (req.query.page) {
-    //   const numTours = await Tour.countDocuments(query);
-    //   if (numTours === 0) throw new Error('This page does not exist'); //i kod przejdzie do cache error
+    //   const numTours = await Tour.countDocuments();
+    //   if (skip >= numTours) throw new Error('Nie ma takiej strony'); // i kod przejdzie do cache error
     // }
 
-    //execute querry
-    // Tworzymy obiekt features i pzrekaujemy do konstruktora pusty query
-    // Jak wywołamy metode filter to qury otrzymuja docelowa postac
-    const features = new APIFeatures(Tour.find(), req.query).filter().sort().limitFields().paginate();
-    const tours = await features.query; // to uruchamia zapytanie
+    if (req.query.page) {
+      const numTours = await Tour.countDocuments(query);
+      if (numTours === 0) throw new Error('This page does not exist'); //i kod przejdzie do cache error
+    }
 
+    const tours = await query; // to uruchamia zapytanie
     res.status(200).json({
       status: 'success',
       results: tours.length,
