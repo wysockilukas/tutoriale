@@ -1,8 +1,23 @@
+const mongoose = require('mongoose');
+//ta blibliotek jest do oblsugi env
 const dotenv = require('dotenv');
 
 dotenv.config({ path: './config.env' });
-
 const app = require('./app');
+
+const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
+
+// Definiujemy polaczenie z baza - connexction strin DM byl podany w atlasie
+mongoose
+  .connect(DB, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+  })
+  .then((con) => {
+    console.log('Polaczenie z baza ', con.connection.name);
+  });
 
 // console.log(process.env);
 
