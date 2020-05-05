@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+// const validator = require('validator');
 
 // Torzymy scheme - czyli cos jakby wzor tablicy - kolekcji
 const tourSchema = new mongoose.Schema(
@@ -11,7 +12,7 @@ const tourSchema = new mongoose.Schema(
       trim: true,
       maxlength: [40, 'A tour name must have less or equal then 40 characters'],
       minlength: [10, 'A tour name must have more or equal then 10 characters'],
-      // validate: [validator.isAlpha, 'Tour name must only contain characters']
+      // validate: [validator.isAlpha, 'Tour name must only contain characters'],
     },
     slug: String,
     duration: {
@@ -25,10 +26,10 @@ const tourSchema = new mongoose.Schema(
     difficulty: {
       type: String,
       required: [true, 'A tour must have a difficulty'],
-      // enum: {
-      //   values: ['easy', 'medium', 'difficult'],
-      //   message: 'Difficulty is either: easy, medium, difficult',
-      // },
+      enum: {
+        values: ['easy', 'medium', 'difficult'],
+        message: 'Difficulty is either: easy, medium, difficult',
+      },
     },
     ratingsAverage: {
       type: Number,
@@ -46,13 +47,14 @@ const tourSchema = new mongoose.Schema(
     },
     priceDiscount: {
       type: Number,
-      // validate: {
-      //   validator: function (val) {
-      //     // this only points to current doc on NEW document creation
-      //     return val < this.price;
-      //   },
-      //   message: 'Discount price ({VALUE}) should be below regular price',
-      // },
+      validate: {
+        validator: function (val) {
+          // this only points to current doc on NEW document creation
+          // console.log(val, this.price);
+          return val < this.price;
+        },
+        message: 'Discount price ({VALUE}) should be below regular price',
+      },
     },
     summary: {
       type: String,
@@ -74,10 +76,10 @@ const tourSchema = new mongoose.Schema(
       select: false, //false - nie mozna tego wybrac przez api, tru jest zawsze nie mozna nie wybrac
     },
     startDates: [Date],
-    // secretTour: {
-    //   type: Boolean,
-    //   default: false,
-    // },
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     // to sa dodakowe opckje schemy
@@ -93,6 +95,7 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+//DOCUMENT MIDDLERWARE
 //Tworztmy wirualna kolune taki alias, ktory jest zwracany tylko przy pobieraniu
 // Uwaga callback nie moze byc arrowfunction wazjy jest ten this
 tourSchema.virtual('durationWeeks').get(function () {
@@ -110,6 +113,26 @@ tourSchema.pre('save', function (next) {
 //ten middleware wykonuje sie juz po zdarzeniu, doc to zapisany dokumnet
 tourSchema.post('save', function (doc, next) {
   // console.log(doc);
+  next();
+});
+
+// QUERY MIDDLEWARE
+// tourSchema.pre('find', function ( next) {
+tourSchema.pre(/^find/, function (next) {
+  this.find({ secretTour: { $ne: true } }); //Dodajmy do zapytania fragmrnt, zeby nigdy nie mozna było zwrócić secretTour
+  this.start = Date.now();
+  next();
+});
+
+tourSchema.post(/^find/, function (docs, next) {
+  // console.log(`Query trwało ${Date.now() - this.start} milisekund`);
+  // console.log(docs);
+  next();
+});
+
+// AGGREGATION MIDDLEWARE
+tourSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
   next();
 });
 
