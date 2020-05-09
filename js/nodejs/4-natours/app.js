@@ -48,7 +48,7 @@ app.all('*', (req, res, next) => {
   // err.statusCode = 404;
   // err.status = 'fail';
   // next(err); //jak przekazmy cokolwiek jako argument do next to razu pomijmy wszystkie inne middle ware i idzuemy do ostarnuuego
-  next(new AppError(`cant find ${req.originalUrl}`), 404);
+  next(new AppError(`cant find ${req.originalUrl}`, 404));
 });
 
 //to jest ostatni miileware i dostaje jako argyment erro - jest do oblugi beldow

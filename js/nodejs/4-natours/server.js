@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 //ta blibliotek jest do oblsugi env
 const dotenv = require('dotenv');
 
+process.on('uncaughtException', (err) => {
+  console.log(err);
+  process.exit(1);
+});
+
 dotenv.config({ path: './config.env' });
 const app = require('./app');
 
@@ -22,8 +27,16 @@ mongoose
 // console.log(process.env);
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log('Serwer pracuje na porcie ', port);
+});
+
+// to przechwytuje wszsytkie nie obsluzone promises
+process.on('unhandledRejection', (err) => {
+  console.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
+  });
 });
 
 /*
