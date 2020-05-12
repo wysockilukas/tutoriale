@@ -1,14 +1,6 @@
 const express = require('express');
-const {
-  getAllTours,
-  createTour,
-  getTour,
-  updateTour,
-  deleteTour,
-  middleWareAliasTopTours,
-  getTourStats,
-  getMonthlyPlan,
-} = require('../controllers/tourController');
+const tourControler = require('../controllers/tourController');
+const authControler = require('../controllers/authController');
 
 const router = express.Router(); // to jest middleware function
 
@@ -16,11 +8,11 @@ const router = express.Router(); // to jest middleware function
 //   getAllTours(req, res);
 // });
 
-router.route('/tour-stats').get(getTourStats);
-router.route('/monthly-plan/:year').get(getMonthlyPlan);
-router.route('/top-5-cheap').get(middleWareAliasTopTours, getAllTours); //robimy alias router , gdzie w middleware pzrekazemy domsylem paramery
+router.route('/tour-stats').get(tourControler.getTourStats);
+router.route('/monthly-plan/:year').get(tourControler.getMonthlyPlan);
+router.route('/top-5-cheap').get(tourControler.middleWareAliasTopTours, tourControler.getAllTours); //robimy alias router , gdzie w middleware pzrekazemy domsylem paramery
 
-router.route('/').get(getAllTours).post(createTour);
-router.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
+router.route('/').get(authControler.protect, tourControler.getAllTours).post(tourControler.createTour);
+router.route('/:id').get(tourControler.getTour).patch(tourControler.updateTour).delete(tourControler.deleteTour);
 
 module.exports = router;
