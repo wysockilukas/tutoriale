@@ -20,7 +20,7 @@ exports.middleWareAliasTopTours = (req, res, next) => {
 exports.getAllTours = catchAsync(async (req, res, next) => {
   const features = new APIFeatures(Tour.find(), req.query).filter().sort().limitFields().paginate();
   const tours = await features.query; // to uruchamia zapytanie
-
+  // console.log(req.user);  //user dodalismy w middelware protect
   res.status(200).json({
     status: 'success',
     results: tours.length,

@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 // const slugify = require('slugify');
 const validator = require('validator');
@@ -40,7 +41,9 @@ const userSchema = new mongoose.Schema(
         message: 'Passwords are not the same!',
       },
     },
-    passwordChangedAt: Date,
+    passwordChangedAt: { type: Date },
+    passwordResetToken: String,
+    passwordResetExpires: Date,
   },
   {
     // to sa dodakowe opckje schemy
@@ -75,6 +78,8 @@ userSchema.methods.correctPassword = async function (candidatePassword, userPass
 };
 
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  // JWTTimestamp to czas kiedy user logowal
+  // changedTimestamp to czas ostatniej zmiany hasla
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
 
@@ -83,6 +88,14 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
 
   // False means NOT changed
   return false;
+};
+
+userSchema.methods.createPasswordRessetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex'); //Zahaszowany token trzymamy w bazie
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  return resetToken;
 };
 
 // Tworzymy model - czyli kolekcje

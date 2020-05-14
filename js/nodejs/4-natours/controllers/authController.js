@@ -21,6 +21,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
+    role: req.body.role,
   });
 
   const token = crateJWT(newUser._id);
@@ -78,6 +79,7 @@ exports.deleteUser = (req, res) => {
   });
 };
 
+// protect sprawdza czy user jest zalogowany
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) get token
   let token;
@@ -89,14 +91,54 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   // 2) weryfikacja tokenu
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET); //dzięki trikowi na promisiffy odpalamy to asynchronicznie
+  // console.log(promisify.toString());
   // 3) Czy user ciagle istnieje
   const freshUser = await User.findById(decoded.id);
   if (!freshUser) {
     return next(new AppError('nie ma takiego usera', 401));
   }
   // 4) Czy user zmienil haslo po wyslaniu tokenu
-  console.log(freshUser, decoded);
+  if (freshUser.changedPasswordAfter(decoded.iat)) {
+    next(new AppError('Zmienilo sie haslo, zaloguj sie ponownie', 401));
+  }
+
+  // jak kod dojdzie do tego miejsca to oznacza ze user przeszedl wszystkie uprawnienia
+  req.user = freshUser; //moze to sie przyda
   next();
 });
+
+exports.restrictTo = (...roles) => {
+  //roles jest tablica rol
+  return catchAsync(async (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      //gdy user z requet nie jets w tablicy
+      return next(new AppError('nie masz uprawnien do', 403));
+    }
+    next();
+  });
+};
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // 1 pobierz usera z maila
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError('Nie ma takiego maila', 404));
+  }
+  // 2 utworz jakis random token
+  const resetToken = user.createPasswordRessetToken();
+  await user.save({ validateBeforeSave: false }); //w funkcji createPasswordRessetToken utworzyslimy nowe pole w obiekcie user, a teraz roimy zapisz
+
+  // 3 Wyslij jako emial
+  res.status(200).json({
+    status: 'zzz',
+    message: resetToken,
+  });
+});
+
+exports.resetPassword = (req, res, next) => {
+  res.status(500).json({
+    status: 'error',
+    message: 'w budowie',
+  });
+};
