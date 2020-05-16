@@ -1,8 +1,10 @@
+const crypto = require('crypto');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+const sendEmail = require('../utils/email');
 
 const crateJWT = (id) =>
   jwt.sign({ id: id }, process.env.JWT_SECRET, {
@@ -130,15 +132,76 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false }); //w funkcji createPasswordRessetToken utworzyslimy nowe pole w obiekcie user, a teraz roimy zapisz
 
   // 3 Wyslij jako emial
-  res.status(200).json({
-    status: 'zzz',
-    message: resetToken,
+  const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/token=${resetToken}`;
+
+  try {
+    sendEmail({ email: req.body.email, subject: 'reset hasla', message: `kliknij ten <a href="${resetUrl}">link</a>` });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'poszedl email',
+    });
+  } catch (error) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(new AppError('Nie udalo sie wyslac maila', 500));
+  }
+});
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  // 1 get user based token
+  const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+  const user = await User.findOne({ passwordResetToken: hashedToken, passwordResetExpires: { $gt: Date.now() } });
+
+  // 2 Jak taki user istnieje i token nie wygasl to mozna resetowac haslo
+  if (!user) {
+    return next(new AppError('Nie ma uzytkownika dla takiego tokena lu token wygasl', 404));
+  }
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+  // 3  passwordChangedAt
+
+  // 4 logujemy uzytkownika czyli wysylamy mu token
+
+  const token = crateJWT(user._id);
+
+  res.status(201).json({
+    status: 'success',
+    token,
   });
 });
 
-exports.resetPassword = (req, res, next) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'w budowie',
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // 1 Get user, wykorzystuje protected middleware ktore zwraca usera
+  const userId = req.user._id;
+  const currentPassword = req.body.currentpassword;
+  const user = await User.findById(userId).select('+password'); //to wyszmusza ze pole password jest zwrócone
+
+  if (!user) {
+    return next(new AppError('Zaloguj sie jeszcze raz', 401));
+  }
+
+  // 2 Czy biezace haslo jest ok
+  // funkcja correctPassword jest zdefiniowana w modelu
+  if (!(await user.correctPassword(currentPassword, user.password))) {
+    return next(new AppError('zle haslo password!', 401));
+  }
+
+  // 3 update haslo
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  await user.save();
+
+  // 4 zaloguj
+  const token = crateJWT(user._id);
+
+  res.status(201).json({
+    status: 'success',
+    token,
   });
-};
+});

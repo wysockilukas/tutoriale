@@ -44,6 +44,11 @@ const userSchema = new mongoose.Schema(
     passwordChangedAt: { type: Date },
     passwordResetToken: String,
     passwordResetExpires: Date,
+    active: {
+      type: Boolean,
+      default: true,
+      select: false,
+    },
   },
   {
     // to sa dodakowe opckje schemy
@@ -72,7 +77,14 @@ userSchema.pre('save', function (next) {
   next();
 });
 
+// to jest querry middleware
+userSchema.pre(/^find/, function (docs, next) {
+  this.find({ active: { $ne: false } });
+  next();
+});
+
 // To cos sie nazywa instances method i jest dostpona dla wszystkich dokumentow ktore znajdzie funkcja
+// i porownuje sie haslo dane do zahaszawane
 userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
   return await bcrypt.compare(candidatePassword, userPassword);
 };
