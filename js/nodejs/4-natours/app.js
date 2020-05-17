@@ -1,7 +1,10 @@
 const express = require('express');
-
-const app = express();
 const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorControler');
@@ -9,16 +12,45 @@ const globalErrorHandler = require('./controllers/errorControler');
 const tourRouter = require('./routes/tourRouts');
 const userRouter = require('./routes/userRouts');
 
+const app = express();
 // const bodyParser = require('body-parser');
+
+//  GLOBAL MIDDLEWARE
+// Security http headers
+app.use(helmet());
 
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 1000,
+  message: 'Za duzo prob z tewgo IP sporobuj pownoenie za godzine',
+});
+app.use('/api', limiter); //wszystkie rout o początku api bedę limitowane
+
 // express.json() to jakaś funkcja ktora jest middleware
 // bez tego nie widac req.body w poscie
-app.use(express.json());
+app.use(
+  express.json({
+    limit: '10kb', //ograniczamy limit do 10kb
+  })
+);
 // app.use(bodyParser.json());
+
+// Data sanitization przed NoSQL querry injetion
+app.use(mongoSanitize());
+
+// Data sanitization against xss
+app.use(xss());
+
+// Zapobiega parametr polluttion
+app.use(
+  hpp({
+    whitelist: ['duration', 'ratingsQuantity', 'ratingsAverage', 'maxGroupSize', 'difficulty', 'price'],
+  })
+);
 
 // to jest serwer static file
 app.use(express.static(`${__dirname}/public`));

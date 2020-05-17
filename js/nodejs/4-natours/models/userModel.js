@@ -78,7 +78,8 @@ userSchema.pre('save', function (next) {
 });
 
 // to jest querry middleware
-userSchema.pre(/^find/, function (docs, next) {
+userSchema.pre(/^find/, function (next) {
+  // this points to the current query
   this.find({ active: { $ne: false } });
   next();
 });

@@ -11,6 +11,28 @@ const crateJWT = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
+const createSendToken = (user, statusCode, res) => {
+  const token = crateJWT(user._id);
+
+  const cookieOptions = {
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+  };
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+  res.cookie('jwt', token, cookieOptions);
+
+  // Remove password from output
+  user.password = undefined;
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
+  });
+};
+
 exports.getAllUsers = (req, res) => {
   res.status(500).json({
     status: 'error',
@@ -26,15 +48,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
     role: req.body.role,
   });
 
-  const token = crateJWT(newUser._id);
-
-  res.status(201).json({
-    status: 'success',
-    token,
-    data: {
-      tour: newUser,
-    },
-  });
+  createSendToken(newUser, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -48,18 +62,16 @@ exports.login = catchAsync(async (req, res, next) => {
   // const fUser = await User.find({ email: email });
   const user = await User.findOne({ email }).select('+password'); //to wyszmusza ze pole password jest zwrócone
 
+  // console.log('szukamy ', email);
+  // console.log(user);
+
   // correctPassword to nasza funkcja zdefiniowalism ja w modelu
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password!', 401));
   }
 
   //3 Jak ok to wyslij JWT
-  const token = crateJWT(user._id);
-
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createSendToken(user, 200, res);
 });
 
 exports.getUser = (req, res) => {
@@ -167,13 +179,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // 3  passwordChangedAt
 
   // 4 logujemy uzytkownika czyli wysylamy mu token
-
-  const token = crateJWT(user._id);
-
-  res.status(201).json({
-    status: 'success',
-    token,
-  });
+  createSendToken(user, 200, res);
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -198,10 +204,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   // 4 zaloguj
-  const token = crateJWT(user._id);
-
-  res.status(201).json({
-    status: 'success',
-    token,
-  });
+  createSendToken(user, 200, res);
 });
