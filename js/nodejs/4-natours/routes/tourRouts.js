@@ -1,6 +1,8 @@
 const express = require('express');
 const tourControler = require('../controllers/tourController');
 const authControler = require('../controllers/authController');
+// const reviewController = require('../controllers/reviewController');
+const reviewRouter = require('./reviewRouts');
 
 const router = express.Router(); // to jest middleware function
 
@@ -19,5 +21,19 @@ router
   .get(tourControler.getTour)
   .patch(tourControler.updateTour)
   .delete(authControler.protect, authControler.restrictTo('admin', 'lead-guide'), tourControler.deleteTour);
+
+/*  
+// to jest nested route
+// POST /tour/234fad4/reviews
+// GET /tour/234fad4/reviews
+router
+  .route('/:tourId/reviews')
+  .post(authControler.protect, authControler.restrictTo('user'), reviewController.createReview);
+*/
+
+// to jest trik na neste route, gdy siceza jest taka to uzywamy innego routa
+// router to tez middlewar
+// a to sie nazywa mouting route
+router.use('/:tourId/reviews', reviewRouter);
 
 module.exports = router;

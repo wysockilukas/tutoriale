@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+// const User = require('./userModel');
 // const validator = require('validator');
 
 // Torzymy scheme - czyli cos jakby wzor tablicy - kolekcji
@@ -80,6 +81,38 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      // GeoJSON
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'], //opcja do wybore bedzie tylko punkt
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    guides: [
+      {
+        //ustawiamy klucze obce do id user
+        //childe referensing
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   {
     // to sa dodakowe opckje schemy
@@ -103,6 +136,13 @@ tourSchema.virtual('durationWeeks').get(function () {
   if (this.duration) return (this.duration / 7).toFixed(2);
 });
 
+// virtual populate - tworzymy wirtualne child id
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour', //bo w modelu reviews klucz obcy do tour to tours
+  localField: '_id', // bo w modelu reviews tour to _id w modelu tours
+});
+
 // docuement middleware - chyba cos jak trugger - startuje pzred save lub create (ale nie mie insermany)
 tourSchema.pre('save', function (next) {
   // console.log(this);
@@ -116,11 +156,26 @@ tourSchema.post('save', function (doc, next) {
   next();
 });
 
+// tourSchema.pre('save', async function(next) {
+//   const guidesPromises = this.guides.map(async id => await User.findById(id));
+//   this.guides = await Promise.all(guidesPromises);  //nadpisujemy id obiekten user
+//   next();
+// });
+
 // QUERY MIDDLEWARE
 // tourSchema.pre('find', function ( next) {
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } }); //Dodajmy do zapytania fragmrnt, zeby nigdy nie mozna było zwrócić secretTour
   this.start = Date.now();
+  next();
+});
+
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  });
+
   next();
 });
 

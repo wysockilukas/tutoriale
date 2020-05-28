@@ -32,7 +32,16 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 
 exports.getTour = catchAsync(async (req, res, next) => {
   // const tour = tours.find((el) => el.id === +req.params.id);
-  const tour = await Tour.findById(req.params.id);
+  // const tour = await Tour.findById(req.params.id);
+  const tour = await Tour.findById(req.params.id).populate('reviews');
+  // const tour = await Tour.findById(req.params.id).populate({
+  //   path: 'reviews',
+  //   select: 'reviews',
+  // });
+  // const tour = await Tour.findById(req.params.id).populate({
+  //   path: 'guides',
+  //   select: '-__v -passwordChangedAt',
+  // });
   //to samo co Tour.find({_id: req.params.id});
   if (!tour) {
     return next(new AppError(`cant find ${req.params.id}`, 404)); //wazny jest retutn bo jak go zaponialem to kod poszedl dalej; return wychoszi z fumkxji
@@ -136,7 +145,10 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
     {
       $addFields: {
         month: {
-          $arrayElemAt: [['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], '$_id'],
+          $arrayElemAt: [
+            ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            '$_id',
+          ],
         },
         month_id: '$_id',
       },

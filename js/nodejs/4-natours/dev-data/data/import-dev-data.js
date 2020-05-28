@@ -5,7 +5,7 @@ const Tour = require('../../models/tourModel');
 
 dotenv.config({ path: './../../config.env' });
 
-const daneZPliku = fs.readFileSync('tours-simple.json', 'utf-8');
+const daneZPliku = fs.readFileSync('tours.json', 'utf-8');
 const daneJson = JSON.parse(daneZPliku);
 
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
