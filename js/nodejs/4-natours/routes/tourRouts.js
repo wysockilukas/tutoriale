@@ -14,7 +14,10 @@ router.route('/tour-stats').get(tourControler.getTourStats);
 router.route('/monthly-plan/:year').get(tourControler.getMonthlyPlan);
 router.route('/top-5-cheap').get(tourControler.middleWareAliasTopTours, tourControler.getAllTours); //robimy alias router , gdzie w middleware pzrekazemy domsylem paramery
 
-router.route('/').get(authControler.protect, tourControler.getAllTours).post(tourControler.createTour);
+router
+  .route('/')
+  .get(authControler.protect, tourControler.getAllTours)
+  .post(authControler.protect, authControler.restrictTo('admin'), tourControler.createTour);
 
 router
   .route('/:id')

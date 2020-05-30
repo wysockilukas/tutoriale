@@ -8,7 +8,12 @@ const router = express.Router({ mergeParams: true }); // to jest middleware func
 router
   .route('/')
   .get(authControler.protect, reviewController.getAllReviews)
-  .post(authControler.protect, authControler.restrictTo('user'), reviewController.createReview);
+  .post(
+    authControler.protect,
+    authControler.restrictTo('user'),
+    reviewController.nestedTourId,
+    reviewController.createReview
+  );
 
 router
   .route('/:id')
