@@ -54,6 +54,8 @@ reviewSchema.pre(/^find/, function (next) {
   next();
 });
 
+// static method moga byc uruchomine na calym modelu (tabeli) np Review.cals
+// instante method byly na dokuneice/
 reviewSchema.statics.calcAverageRatings = async function (tourId) {
   const stats = await this.aggregate([
     {

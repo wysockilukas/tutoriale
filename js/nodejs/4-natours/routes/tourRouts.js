@@ -11,22 +11,24 @@ const router = express.Router(); // to jest middleware function
 // });
 
 router.route('/tour-stats').get(tourControler.getTourStats);
-router.route('/monthly-plan/:year').get(tourControler.getMonthlyPlan);
+router
+  .route(authControler.protect, authControler.restrictTo('admin', 'lead-guide', 'guide'), '/monthly-plan/:year')
+  .get(tourControler.getMonthlyPlan);
 router.route('/top-5-cheap').get(tourControler.middleWareAliasTopTours, tourControler.getAllTours); //robimy alias router , gdzie w middleware pzrekazemy domsylem paramery
 
 router
   .route('/')
-  .get(authControler.protect, tourControler.getAllTours)
-  .post(authControler.protect, authControler.restrictTo('admin'), tourControler.createTour);
+  .get(tourControler.getAllTours)
+  .post(authControler.protect, authControler.restrictTo('admin', 'lead-guide'), tourControler.createTour);
 
 router
   .route('/:id')
   .get(tourControler.getTour)
-  .patch(tourControler.updateTour)
+  .patch(authControler.protect, authControler.restrictTo('admin', 'lead-guide'), tourControler.updateTour)
   .delete(authControler.protect, authControler.restrictTo('admin', 'lead-guide'), tourControler.deleteTour);
 
 /*  
-// to jest nested route
+// to jest nested route 
 // POST /tour/234fad4/reviews
 // GET /tour/234fad4/reviews
 router

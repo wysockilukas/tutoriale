@@ -128,6 +128,10 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+// tourSchema.index({ price: 1 });
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+
 //DOCUMENT MIDDLERWARE
 //Tworztmy wirualna kolune taki alias, ktory jest zwracany tylko przy pobieraniu
 // Uwaga callback nie moze byc arrowfunction wazjy jest ten this
