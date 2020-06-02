@@ -1,5 +1,5 @@
 const express = require('express');
-const tourControler = require('../controllers/tourController');
+const tourController = require('../controllers/tourController');
 const authControler = require('../controllers/authController');
 // const reviewController = require('../controllers/reviewController');
 const reviewRouter = require('./reviewRouts');
@@ -10,22 +10,25 @@ const router = express.Router(); // to jest middleware function
 //   getAllTours(req, res);
 // });
 
-router.route('/tour-stats').get(tourControler.getTourStats);
+router.route('/tour-stats').get(tourController.getTourStats);
 router
   .route(authControler.protect, authControler.restrictTo('admin', 'lead-guide', 'guide'), '/monthly-plan/:year')
-  .get(tourControler.getMonthlyPlan);
-router.route('/top-5-cheap').get(tourControler.middleWareAliasTopTours, tourControler.getAllTours); //robimy alias router , gdzie w middleware pzrekazemy domsylem paramery
+  .get(tourController.getMonthlyPlan);
+router.route('/top-5-cheap').get(tourController.middleWareAliasTopTours, tourController.getAllTours); //robimy alias router , gdzie w middleware pzrekazemy domsylem paramery
+
+router.route('/tours-within/:distance/center/:latlng/unit/:unit').get(tourController.getToursWithin);
+router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances);
 
 router
   .route('/')
-  .get(tourControler.getAllTours)
-  .post(authControler.protect, authControler.restrictTo('admin', 'lead-guide'), tourControler.createTour);
+  .get(tourController.getAllTours)
+  .post(authControler.protect, authControler.restrictTo('admin', 'lead-guide'), tourController.createTour);
 
 router
   .route('/:id')
-  .get(tourControler.getTour)
-  .patch(authControler.protect, authControler.restrictTo('admin', 'lead-guide'), tourControler.updateTour)
-  .delete(authControler.protect, authControler.restrictTo('admin', 'lead-guide'), tourControler.deleteTour);
+  .get(tourController.getTour)
+  .patch(authControler.protect, authControler.restrictTo('admin', 'lead-guide'), tourController.updateTour)
+  .delete(authControler.protect, authControler.restrictTo('admin', 'lead-guide'), tourController.deleteTour);
 
 /*  
 // to jest nested route 

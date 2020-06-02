@@ -91,8 +91,9 @@ reviewSchema.post('save', function () {
 
 // findByIdAndUpdate
 // findByIdAndDelete
+// to jest do query middleware ale robimy trik zeby miec dostep dokumentu
 reviewSchema.pre(/^findOneAnd/, async function (next) {
-  this.r = await this.findOne();
+  this.r = await this.findOne(); // To nam zwraca biezxacy review jako dokument
   // console.log(this.r);
   next();
 });
