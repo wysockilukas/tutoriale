@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
@@ -12,9 +13,15 @@ const globalErrorHandler = require('./controllers/errorControler');
 const tourRouter = require('./routes/tourRouts');
 const userRouter = require('./routes/userRouts');
 const reviewRouter = require('./routes/reviewRouts');
+const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
+app.set('view engine', 'pug'); //wsjazujemy expressowi ktory template engine bedzie w uzyciu, ale musimy go zainstalowac
+app.set('views', path.join(__dirname, 'views'));
 // const bodyParser = require('body-parser');
+
+// to jest serwer static file
+app.use(express.static(`${__dirname}/public`));
 
 //  GLOBAL MIDDLEWARE
 // Security http headers
@@ -53,9 +60,6 @@ app.use(
   })
 );
 
-// to jest serwer static file
-app.use(express.static(`${__dirname}/public`));
-
 // Tworrzymy własne funkcje middlewae
 // app.use((req, res, next) => {
 //   console.log('Z middeware');
@@ -67,6 +71,8 @@ app.use((req, res, next) => {
   next();
 });
 
+// to sie nazywa mouting router
+app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter); // to sie nazywa mouting router
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);

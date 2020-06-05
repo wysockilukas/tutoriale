@@ -1,4 +1,4 @@
-const Tour = require('../models/tourModel');
+const Tour = require('../../models/tourModel');
 
 exports.middleWareAliasTopTours = (req, res, next) => {
   // const newReq = {

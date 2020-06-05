@@ -1,5 +1,5 @@
-const Tour = require('../models/tourModel');
-const APIFeatures = require('../utils/apiFeatures');
+const Tour = require('../../models/tourModel');
+const APIFeatures = require('../../utils/apiFeatures');
 
 exports.middleWareAliasTopTours = (req, res, next) => {
   // const newReq = {
@@ -212,7 +212,10 @@ exports.getMonthlyPlan = async (req, res) => {
       {
         $addFields: {
           month: {
-            $arrayElemAt: [['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], '$_id'],
+            $arrayElemAt: [
+              ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+              '$_id',
+            ],
           },
           month_id: '$_id',
         },
