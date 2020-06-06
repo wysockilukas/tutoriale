@@ -1,25 +1,12 @@
 const express = require('express');
 
 const router = express.Router();
+const viewControler = require('../controllers/viewControler');
 
 // To działa dlatgo ze u gory w app.js właczylismy  pug
-router.get('/', (req, res) => {
-  res.status(200).render('base', {
-    tour: 'forest hikker',
-    user: { name: 'Lukasz Wysocki' },
-  }); //render pug templare
-});
-
-router.get('/overview', (req, res) => {
-  res.status(200).render('overview', {
-    title: 'All Tours',
-  });
-});
-
-router.get('/tour', (req, res) => {
-  res.status(200).render('tour', {
-    title: 'Forest Hikker Tour',
-  });
-});
+// router.get('/', viewControler.root);
+router.get('/', viewControler.getOveriew);
+router.get('/tour/:slug', viewControler.getTour);
+// router.get('/tour', viewControler.getTour);
 
 module.exports = router;
