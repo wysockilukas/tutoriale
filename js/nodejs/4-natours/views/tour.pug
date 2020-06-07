@@ -1,6 +1,11 @@
 extends base
 include _reviewCardMixin
 
+//- Nie zastepujemy bloku tyko dopisujemy pod spodem
+block append head
+    link(rel='stylesheet' href='https://unpkg.com/leaflet@1.6.0/dist/leaflet.css')
+    script(src='https://unpkg.com/leaflet@1.6.0/dist/leaflet.js')
+    script(src='/js/leaflet.js' defer)
 
 mixin overviewBox(label, text, icon)
   .overview-box__detail
@@ -64,7 +69,7 @@ block content
                 img(src=`/img/tours/${image}`, alt=`${tour.name} Tour ${idx+1}` class=`picture-box__img picture-box__img--${idx+1}`)
 
     section.section-map
-        #map            
+        #map(data-locations=`${JSON.stringify(tour.locations)}`)           
 
     section.section-reviews
         .reviews

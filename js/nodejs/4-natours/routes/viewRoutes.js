@@ -7,6 +7,7 @@ const viewControler = require('../controllers/viewControler');
 // router.get('/', viewControler.root);
 router.get('/', viewControler.getOveriew);
 router.get('/tour/:slug', viewControler.getTour);
+router.get('/login', viewControler.getLogin);
 // router.get('/tour', viewControler.getTour);
 
 module.exports = router;
