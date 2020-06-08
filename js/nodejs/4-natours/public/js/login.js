@@ -1,6 +1,8 @@
 /* eslint-disable */
+import axios from 'axios';
+import { showAlert } from './alerts';
 
-const login = async (email, password) => {
+export const login = async (email, password) => {
   try {
     const res = await axios({
       method: 'POST',
@@ -12,20 +14,29 @@ const login = async (email, password) => {
     });
 
     // console.log(res.data);
-    if ((res.data.status = 'success')) {
+    if (res.data.status === 'success') {
+      showAlert('success', 'Zalogowano');
       window.setTimeout(() => {
         location.assign('/');
       }, 1500);
     }
   } catch (error) {
-    console.log(error.response.data.message);
+    showAlert('error', error.response.data.message);
+    // console.log(error.response.data.message);
   }
 };
 
-document.querySelector('.form').addEventListener('submit', (e) => {
-  e.preventDefault();
-  console.log('Byl klik');
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  login(email, password);
-});
+export const logOut = async () => {
+  try {
+    const res = await axios({
+      method: 'GET',
+      url: 'http://127.0.0.1:3000/api/v1/users/logout',
+    });
+
+    // console.log(res.data);
+    if (res.data.status === 'success') location.reload(true);
+  } catch (error) {
+    showAlert('error', error.response.data.message);
+    // console.log(error.response.data.message);
+  }
+};
