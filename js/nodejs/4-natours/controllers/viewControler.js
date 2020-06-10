@@ -1,5 +1,6 @@
 const Tour = require('../models/tourModel');
 const catchAsync = require('../utils/catchAsync');
+const appError = require('../utils/appError');
 
 exports.getOveriew = catchAsync(async (req, res) => {
   // 1 pobranie danych z APi z kolekcji
@@ -20,6 +21,10 @@ exports.getTour = catchAsync(async (req, res, next) => {
     path: 'reviews',
     fields: 'review rating user',
   });
+
+  if (!tour) {
+    return next(new appError('Nie ma takiego tour', 404));
+  }
 
   res.status(200).render('tour', {
     title: `${tour.name} Tour`,
