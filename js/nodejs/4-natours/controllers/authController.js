@@ -112,7 +112,8 @@ exports.protect = catchAsync(async (req, res, next) => {
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
     token = req.headers.authorization.split(' ')[1];
-  } else if (req.cookies.jwt) {
+    // } else if (req.cookies.jwt) {
+  } else if (req.cookies.jwt && req.cookies.jwt !== 'logout') {
     // jak nie ma tokenu w headerze to sprawdzamy czy jest cookie
     token = req.cookies.jwt;
   }
@@ -135,6 +136,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // jak kod dojdzie do tego miejsca to oznacza ze user przeszedl wszystkie uprawnienia
   req.user = freshUser; //moze to sie przyda
+  res.locals.user = freshUser;
   next();
 });
 

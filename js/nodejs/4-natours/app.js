@@ -48,6 +48,12 @@ app.use(
 );
 // app.use(bodyParser.json());
 
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: '10kb',
+  })
+);
 app.use(cookieParser());
 
 // Data sanitization przed NoSQL querry injetion

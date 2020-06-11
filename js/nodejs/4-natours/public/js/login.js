@@ -34,7 +34,7 @@ export const logOut = async () => {
     });
 
     // console.log(res.data);
-    if (res.data.status === 'success') location.reload(true);
+    if (res.data.status === 'success') window.location.href = '/';
   } catch (error) {
     showAlert('error', error.response.data.message);
     // console.log(error.response.data.message);
