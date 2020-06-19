@@ -1,7 +1,80 @@
+const multer = require('multer');
+const sharp = require('sharp');
+
 const Tour = require('../models/tourModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const factory = require('./handlerFactory');
+
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  const ext = file.mimetype.split('/')[0];
+  if (ext === 'image') {
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an image, zaladuj obrazki', 400), false);
+  }
+};
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+}); //multer jest do uploadu plikow
+
+exports.uploadTourImages = upload.fields([
+  { name: 'imageCover', maxCount: 1 },
+  { name: 'images', maxCount: 3 },
+]);
+
+//inne warianty tego na gorze
+//upload.single('image')
+//upload.array('images', 5)
+
+exports.resizeTourImages = catchAsync(async (req, res, next) => {
+  if (!req.files.imageCover || !req.files.images) return next();
+
+  // 1 Cover image, params bo id jest w urlu
+  const imageCoverFileName = `tour-${req.params.id}-${Date.now()}-cover.jpg`;
+  await sharp(req.files.imageCover[0].buffer)
+    .resize(2000, 1333)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/tours/${imageCoverFileName}`);
+  req.body.imageCover = imageCoverFileName;
+
+  // 2 pozostale pliki
+  // w ciele map jest funkcja asynchrmoniczna, ktora zwraca promiese
+  const imgFileNames = [];
+  await Promise.all(
+    req.files.images.map(async (file, idx) => {
+      const imageFileName = `tour-${req.params.id}-${Date.now()}-${idx + 1}.jpg`;
+      console.log(imageFileName);
+      await sharp(file.buffer)
+        .resize(2000, 1333)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/img/tours/${imageFileName}`);
+      imgFileNames.push(imageFileName);
+    })
+  );
+
+  req.body.images = imgFileNames;
+  // console.log(imgFileNames);
+  next();
+
+  /// UWAGA to mi nie dziallo
+  // bo ten await był wewnatrz callback i kod sie nie zatrzymyalk ttlko wyukonywal siue next()
+  // req.files.images.forEach(async (file, idx) => {
+  //   const imageFileName = `tour-${req.params.id}-${Date.now()}-${idx}.jpg`;
+  //   console.log(imageFileName);
+  //   await sharp(file.buffer)
+  //     .resize(2000, 1333)
+  //     .toFormat('jpeg')
+  //     .jpeg({ quality: 90 })
+  //     .toFile(`public/img/tours/${imageFileName}`);
+  //   imgFileNames.push(imageFileName);
+  // });
+});
 
 exports.middleWareAliasTopTours = (req, res, next) => {
   // nadpisuje parametry

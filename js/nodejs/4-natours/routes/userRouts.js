@@ -1,4 +1,6 @@
 const express = require('express');
+const multer = require('multer');
+
 const authControler = require('../controllers/authController');
 const userControler = require('../controllers/userController');
 
@@ -14,7 +16,13 @@ router.patch('/resetPassword/:token', authControler.resetPassword);
 
 router.patch('/updateMyPassword', authControler.protect, authControler.updatePassword);
 router.patch('/me', userControler.getMe, userControler.getUser);
-router.patch('/updateMe', authControler.protect, userControler.updateMe);
+router.patch(
+  '/updateMe',
+  authControler.protect,
+  userControler.uploadUserPhoto,
+  userControler.resizeUserPhoto,
+  userControler.updateMe
+); //photo to nazwa pola tesktowego z fomrularza
 router.delete('/deleteMe', authControler.protect, userControler.deleteMe);
 
 router.use(authControler.restrictTo('admin')); //to zabezpieczarouty ponziej, bo jak kod dotrze do tego miekjsaca to ten middleware sie wykona
