@@ -12,19 +12,25 @@ module.exports = class Email {
   }
 
   newTransport() {
-    if ((process.env.NODE_ENV = 'production')) {
+    if (process.env.NODE_ENV === 'production') {
       // Sendgrid
-      return 1;
-    } else {
       return nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: process.env.EMAIL_PORT,
+        service: 'SendGrid',
         auth: {
-          user: process.env.EMAIL_USERNAME,
-          pass: process.env.EMAIL_PASSWORD,
+          user: process.env.SENDGRID_USERNAME,
+          pass: process.env.SENDGRID_PASSWORD,
         },
       });
     }
+
+    return nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
   }
 
   async _send(template, subject) {
@@ -49,5 +55,10 @@ module.exports = class Email {
 
   async sendWelcome() {
     await this._send('Welcome', 'Witamy w serwisie');
+  }
+
+  //passwordReset to nazwa passwordReset.pig
+  async sendPasswordReset() {
+    await this._send('passwordReset', 'Token zmiany hasla (10 minut) ');
   }
 };

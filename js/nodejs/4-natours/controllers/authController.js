@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const sendEmail = require('../utils/email');
+const Email = require('../utils/email');
 
 const crateJWT = (id) =>
   jwt.sign({ id: id }, process.env.JWT_SECRET, {
@@ -47,7 +47,8 @@ exports.signUp = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
     role: req.body.role,
   });
-
+  const url = `${req.protocol}://${req.get('host')}/me`;
+  await new Email(newUser, url).sendWelcome();
   createSendToken(newUser, 201, res);
 });
 
@@ -191,10 +192,12 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   await user.save({ validateBeforeSave: false }); //w funkcji createPasswordRessetToken utworzyslimy nowe pole w obiekcie user, a teraz roimy zapisz
 
   // 3 Wyslij jako emial
-  const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/token=${resetToken}`;
 
   try {
-    sendEmail({ email: req.body.email, subject: 'reset hasla', message: `kliknij ten <a href="${resetUrl}">link</a>` });
+    // sendEmail({ email: req.body.email, subject: 'reset hasla', message: `kliknij ten <a href="${resetUrl}">link</a>` });
+
+    const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/token=${resetToken}`;
+    await new Email(user, resetUrl).sendPasswordReset();
 
     res.status(200).json({
       status: 'success',
