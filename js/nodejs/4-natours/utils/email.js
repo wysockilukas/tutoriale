@@ -5,6 +5,7 @@ const htmlToText = require('html-to-text');
 // new Email(user,url).sendWelcome()
 module.exports = class Email {
   constructor(user, url) {
+    // console.log(`Jestem w konstryuktorze X${process.env.NODE_ENV}X`);
     this.to = user.email;
     this.firstName = user.name.split(' ')[0];
     this.url = url;
@@ -12,8 +13,9 @@ module.exports = class Email {
   }
 
   newTransport() {
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV.trim() === 'production') {
       // Sendgrid
+      // console.log('Sendgrid');
       return nodemailer.createTransport({
         service: 'SendGrid',
         auth: {
@@ -23,6 +25,7 @@ module.exports = class Email {
       });
     }
 
+    // console.log('MaiulTrap');
     return nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: process.env.EMAIL_PORT,

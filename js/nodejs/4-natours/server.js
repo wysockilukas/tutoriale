@@ -10,6 +10,8 @@ process.on('uncaughtException', (err) => {
 dotenv.config({ path: './config.env' });
 const app = require('./app');
 
+// console.log(process.env.NODE_ENV);
+
 const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
 
 // Definiujemy polaczenie z baza - connexction strin DM byl podany w atlasie

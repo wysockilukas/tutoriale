@@ -14,6 +14,7 @@ const globalErrorHandler = require('./controllers/errorControler');
 const tourRouter = require('./routes/tourRouts');
 const userRouter = require('./routes/userRouts');
 const reviewRouter = require('./routes/reviewRouts');
+const bookingRouter = require('./routes/bookingRoutes');
 const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
@@ -86,6 +87,7 @@ app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter); // to sie nazywa mouting router
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
+app.use('/api/v1/bookings', bookingRouter);
 
 // Dodajemy tu miiddleWare, a to działa tak ze jak spelniones routingi powyzej to do tego dolnego nie dojdziemy
 // obłusga 404

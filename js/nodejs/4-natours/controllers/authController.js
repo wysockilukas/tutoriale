@@ -207,7 +207,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
-
+    // console.log(error);
     return next(new AppError('Nie udalo sie wyslac maila', 500));
   }
 });
