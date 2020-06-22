@@ -7,6 +7,8 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
+const cors = require('cors');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorControler');
@@ -18,6 +20,23 @@ const bookingRouter = require('./routes/bookingRoutes');
 const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
+
+// to jakis bajer zeby dzialalo na heroku
+// app.enable('trust proxy');
+
+// 1) GLOBAL MIDDLEWARES
+// Implement CORS
+app.use(cors());
+// Access-Control-Allow-Origin *
+// api.natours.com, front-end natours.com
+// app.use(cors({
+//   origin: 'https://www.natours.com'
+// }))
+
+// options request jest taka motepda jkak get lub post i pzreglaradka moze zeorobic tez taki request
+app.options('*', cors());
+// app.options('/api/v1/tours/:id', cors());
+
 app.set('view engine', 'pug'); //wsjazujemy expressowi ktory template engine bedzie w uzyciu, ale musimy go zainstalowac
 app.set('views', path.join(__dirname, 'views'));
 // const bodyParser = require('body-parser');
@@ -70,6 +89,8 @@ app.use(
   })
 );
 
+app.use(compression());
+
 // Tworrzymy własne funkcje middlewae
 // app.use((req, res, next) => {
 //   console.log('Z middeware');
@@ -85,6 +106,7 @@ app.use((req, res, next) => {
 // to sie nazywa mouting router
 app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter); // to sie nazywa mouting router
+// app.use('/api/v1/tours', cors(), tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
 app.use('/api/v1/bookings', bookingRouter);
